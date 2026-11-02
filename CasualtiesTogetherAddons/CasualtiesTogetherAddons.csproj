@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>CasualtiesTogetherAddons</AssemblyName>
+    <PluginId>CasualtiesTogetherAddons</PluginId>
+    <Product>Casualties Together Addons</Product>
+    <Version>0.0.1</Version>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>CasualtiesTogetherAddons</RootNamespace>
+    <GamePath Condition="'$(GamePath)' == ''">$(CASUALTIESTOGETHER_GAME_PATH)</GamePath>
+    <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo</GamePath>
+    <ManagedPath>$(GamePath)\CasualtiesUnknown_Data\Managed</ManagedPath>
+    <TogetherDll Condition="'$(TogetherDll)' == ''">$(GamePath)\BepInEx\plugins\mod\BepInEx\plugins\Together\CasualtiesMP.dll</TogetherDll>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BepInEx" HintPath="$(GamePath)\BepInEx\core\BepInEx.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(GamePath)\BepInEx\core\0Harmony.dll" Private="false" />
+    <Reference Include="UnityEngine" HintPath="$(ManagedPath)\UnityEngine.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(ManagedPath)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="$(ManagedPath)\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="CasualtiesMP" HintPath="$(TogetherDll)" Private="false" />
+  </ItemGroup>
+  
+  <Target Name="CheckGameReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="'%(Reference.HintPath)' != '' and !Exists('%(Reference.HintPath)')" Text="Missing reference: %(Reference.HintPath). Set GamePath or TogetherDll to match your installation." />
+  </Target>
+  <!-- Generate runtime identity from the same values used for DLL metadata. -->
+  <Target Name="GeneratePluginInfo" BeforeTargets="CoreCompile">
+    <WriteLinesToFile File="$(IntermediateOutputPath)PluginInfo.g.cs"
+      Lines="namespace CasualtiesTogetherAddons { internal static class PluginInfo { public const string Id = &quot;$(PluginId)&quot;%3B public const string Name = &quot;$(Product)&quot;%3B public const string Version = &quot;$(Version)&quot;%3B } }"
+      Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)PluginInfo.g.cs" />
+    </ItemGroup>
+  </Target>
+</Project>
