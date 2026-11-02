@@ -15,6 +15,20 @@ Enabled by default. Remembers your toggle-to-talk choice through world loading a
 - No microphone state is saved to disk: a full game restart starts with the original closed state.
 - Other microphone modes retain their original recording behavior.
 
+### BetterVoiceIndicator
+
+Enabled by default. Replaces the multiplayer mod's small voice-status text with a crisp pixel microphone.
+
+The microphone uses transparent PNG images under `CasualtiesTogetherAddons/Assets/VoiceIndicator`, embedded in the DLL. Idle, eight fill levels, and muted states are editable image assets, loaded with crisp pixel scaling and released when the feature shuts down.
+
+- In game, the mic is anchored beside the second bottom-left button (above the heart), with its center 150 UI-scaled pixels from the left and 140 from the bottom. Chat position and size do not move it. Position customization is planned for later.
+- In the main menu, an open mic appears at the original text's top-left row. A closed mic is hidden there.
+- An open, quiet mic has an empty interior. Outgoing voice loudness fills it upward, with quick attack and slower decay. A closed or blocked mic has a diagonal slash.
+- Microphone mode **Off** hides the indicator completely.
+- State comes from the original recording method's result, after its voice permissions and speech restrictions. The fill reads the original outgoing audio level, including the mod's microphone gain. Local microphone-test loopback does not count as outgoing voice.
+- No network messages, server acknowledgments, audio modifications, or changes to recording/transmission logic are added. The recording and audio methods only receive observing postfixes; a separate UI patch replaces the original text.
+- The original console/HUD visibility rules still apply.
+
 ## Plugin identity
 
 Display name: `Casualties Together Addons`. Plugin ID: `CasualtiesTogetherAddons`. Version: `0.0.1`.
@@ -25,7 +39,7 @@ The project file is the source of truth: `PluginId`, `Product`, and `Version` ge
 
 Open **Settings > Multiplayer**, then find **Casualties Together Addons** directly below **Deactivate Multiplayer Mod**, before **User Interface**.
 
-- **Remember microphone toggle** is the only checkbox for now, enabled by default.
+- **Persist Toggle to talk** and **Better voice indicator** each have their own checkbox, enabled by default.
 - Changes save automatically and apply after a full game restart.
 - In both menus, a changed setting is labeled **(restart required)** and shows its own **Restart Game** button. Reverting the setting to its value at launch removes the label and button. The game-settings layout makes room for visible restart buttons without leaving empty rows when hidden.
 - There is no master switch or separate hotkey window.
@@ -46,6 +60,9 @@ BepInEx\config\CasualtiesTogetherAddons.cfg
 
 ```ini
 [MicTogglePersistence]
+Enabled = true
+
+[BetterVoiceIndicator]
 Enabled = true
 ```
 
@@ -90,6 +107,8 @@ Manual test with another player:
 
 These multiplayer/audio checks must be performed in game; automated tests do not access a real microphone or lobby.
 
+For Better Voice Indicator, check open-but-silent, speaking at different loudness levels, toggle closed, push-to-talk release, always-on mode, and microphone volume zero. Check that server voice restrictions and character speech restrictions show the crossed-out mic. Switch VC mode to Off and confirm it disappears. In the main menu, confirm only an open mic appears at the original top-left row. Open chat and change its position to confirm the mic stays at its fixed screen position. Check a smaller window and your usual UI scale. Disable only Better voice indicator and restart to confirm the original text returns while toggle persistence still works.
+
 The mod-menu sidebar needs an in-game check too: open Settings, confirm our section appears below Bug Report, change its checkbox, and confirm the same preference appears in the game settings screen after reopening the Multiplayer tab. Reset to Defaults in our sidebar section should turn the feature on. The native menu also needs an in-game check: open the Multiplayer tab, confirm the add-on section appears below Deactivate Multiplayer Mod and above User Interface, change the checkbox, switch tabs and return to confirm the saved choice, then restart to check the changed behavior. Reopening the tab should not duplicate our controls. Toggle an option and confirm its restart button appears in both menus; toggle back and confirm it disappears. After saving any run you want to keep, use Restart Game to verify the original mod's relaunch flow and confirm the selected option is applied. The multiplayer mod's Reset to Default button continues to reset its own settings; set our checkbox directly to change our preference.
 
 ## Automated tests
@@ -99,6 +118,14 @@ The mod-menu sidebar needs an in-game check too: open Settings, confirm our sect
 ```
 
 The Windows .NET Framework 4.8 harness links the production feature and mod-menu integration code and uses the installed HarmonyX library to patch a small voice-chat fixture. It checks saved preferences, restart status, patch installation/removal, repeated blocked/resumed transitions, open/closed choices, manual mute, mode changes, restrictions, and the individual feature switch. Additional checks verify shared pending-change labels, reverting settings, saving before a simulated restart request, and exercise the actual sidebar transpiler, title translation, shared default reset, and cleanup against a small menu fixture, including the branch where Bug Report is absent. It does not load the game's real voice-chat or menu implementation. The test build restores the .NET Framework reference-assemblies package; the plugin itself uses local game references.
+
+The indicator tests cover state visibility, live level decay, bottom-left positioning, safe rejection of incompatible HUD layouts, independent settings, and Harmony patch installation/removal against fixtures. To also validate the replacement against the installed multiplayer HUD's actual IL (without executing the game), build the plugin and tests, then run:
+
+```powershell
+.\tests\bin\Release\net48\FeatureTests.exe --installed 'C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo' "$PWD\CasualtiesTogetherAddons\bin\Release\netstandard2.1\CasualtiesTogetherAddons.dll"
+```
+
+This optional check reads the installed HUD and runs the production transpiler. It does not verify rendering or execute real recording methods, which need the game's Unity/Mono runtime.
 
 ## Adding another feature
 

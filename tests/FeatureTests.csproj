@@ -8,11 +8,14 @@
     <ManagedPath>$(GamePath)\CasualtiesUnknown_Data\Managed</ManagedPath>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\CasualtiesTogetherAddons\Assets\VoiceIndicator\*.png" LogicalName="CasualtiesTogetherAddons.Assets.VoiceIndicator.%(Filename)%(Extension)" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     <Compile Include="..\CasualtiesTogetherAddons\Features\*.cs" Link="Features\%(Filename)%(Extension)" />
     <Compile Include="..\CasualtiesTogetherAddons\UI\FeatureSettingsActions.cs" Link="UI\FeatureSettingsActions.cs" />
     <Compile Include="..\CasualtiesTogetherAddons\UI\ModMenuSettings.cs" Link="UI\ModMenuSettings.cs" />
     <Reference Include="UnityEngine.IMGUIModule" HintPath="$(ManagedPath)\UnityEngine.IMGUIModule.dll" />
+    <Reference Include="UnityEngine.ImageConversionModule" HintPath="$(ManagedPath)\UnityEngine.ImageConversionModule.dll" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(ManagedPath)\UnityEngine.TextRenderingModule.dll" />
     <Reference Include="BepInEx" HintPath="$(CorePath)\BepInEx.dll" />
     <Reference Include="0Harmony" HintPath="$(CorePath)\0Harmony.dll" />
     <Reference Include="MonoMod.RuntimeDetour" HintPath="$(CorePath)\MonoMod.RuntimeDetour.dll" />

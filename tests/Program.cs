@@ -24,11 +24,15 @@ namespace Together
     {
         public static byte current_microphone_mode = 3;
         public static float my_volume = 1;
+        public static float my_output_volume;
+        public static bool ENABLE_LOCAL_LOOPBACK;
         private static bool _toggle_to_talk_toggled;
         private static bool _push_to_talk_pushed;
         public static bool Loading, ServerAllows = true, KeyPressed, SpeechAllowed = true;
         public static bool Toggle => _toggle_to_talk_toggled;
         public static bool IsMicModeToggleToTalk() => current_microphone_mode == 3;
+        public static bool IsMicModeDisabled() => current_microphone_mode == 0;
+        private static void Client_SendMicDataFrame(float[] data, bool is_not_last) { }
         public static bool VoiceChatIsEnabled() => !Loading && ServerAllows && my_volume > 0 && current_microphone_mode != 0;
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void SetMicrophoneMode(byte mode) { current_microphone_mode = mode; }
@@ -54,6 +58,7 @@ namespace Together
         public static void Reset()
         {
             current_microphone_mode = 3; my_volume = 1;
+            ENABLE_LOCAL_LOOPBACK = false;
             Loading = KeyPressed = _toggle_to_talk_toggled = _push_to_talk_pushed = false;
             ServerAllows = SpeechAllowed = true;
         }
@@ -90,8 +95,13 @@ internal static class Program
         return result;
     }
     private static void NoOp() { }
-    private static void Main()
+    private static void Main(string[] args)
     {
+        if (args.Length == 3 && args[0] == "--installed")
+        {
+            InstalledVoiceIndicatorTests.Run(args[1], args[2]);
+            return;
+        }
         var directory = Path.Combine(Path.GetTempPath(), "CasualtiesTogetherAddons-tests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         var log = new ManualLogSource("FeatureTests");
@@ -174,6 +184,7 @@ internal static class Program
                 "Enabling saved preference waits for restart");
             ModMenuTests.Run(feature, config, log, Check);
             RestartSettingsTests.Run(feature, config, log, Check);
+            VoiceIndicatorTests.Run(config, log, Check);
             Console.WriteLine($"All {checks} checks passed.");
         }
         finally

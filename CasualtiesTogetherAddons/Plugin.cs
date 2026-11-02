@@ -36,7 +36,7 @@ public sealed class Plugin : BaseUnityPlugin
             return;
         }
 
-        features = [new MicTogglePersistenceFeature()];
+        features = [new MicTogglePersistenceFeature(), new BetterVoiceIndicatorFeature()];
         foreach (var feature in features)
             feature.Initialize(Config, Logger);
         settings = new MultiplayerSettings(features, Logger);

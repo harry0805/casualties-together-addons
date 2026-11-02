@@ -46,12 +46,17 @@ internal abstract class FeatureModule : IDisposable
     }
 
     protected abstract void ApplyPatches(Harmony patches);
+    protected virtual void ReleaseResources() { }
 
     public void Dispose()
     {
         if (harmony == null) return;
         try { harmony.UnpatchSelf(); }
         catch (Exception error) { logger.LogError($"[{Id}] Could not remove patches: {error}"); }
-        harmony = null;
+        finally
+        {
+            harmony = null;
+            ReleaseResources();
+        }
     }
 }
