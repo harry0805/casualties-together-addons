@@ -8,6 +8,7 @@ using CasualtiesTogetherAddons;
 using CasualtiesTogetherAddons.Features;
 using HarmonyLib;
 using Together;
+using Plugin = CasualtiesTogetherAddons.Plugin;
 
 namespace CasualtiesTogetherAddons
 {
@@ -98,11 +99,12 @@ internal static class Program
         var feature = new MicTogglePersistenceFeature();
         try
         {
-            feature.Initialize(config, log, true);
+            feature.Initialize(config, log);
             var method = typeof(Voicechat).GetMethod(nameof(Voicechat.RecordMicUpdate));
             Check(Harmony.GetPatchInfo(method)?.Owners.Contains(Plugin.Id + ".MicTogglePersistence") == true,
                 "Production feature installed real Harmony patches");
             Voicechat.Reset();
+            Check(feature.Enabled.Value && feature.IsActive, "Feature is enabled by default");
             Check(!Frame(), "Starts closed");
             Check(Frame(true) && Voicechat.Toggle, "Manual toggle opens mic");
             for (var transition = 0; transition < 3; transition++)
@@ -140,23 +142,38 @@ internal static class Program
                 "Feature cleanup leaves other owners intact");
             otherOwner.UnpatchSelf();
             var failing = new FailingFeature();
-            failing.Initialize(config, log, true);
+            failing.Initialize(config, log);
             Check(Harmony.GetPatchInfo(typeof(Voicechat).GetMethod(nameof(Voicechat.SetMicrophoneMode)))?.Owners.Contains(
                 Plugin.Id + ".FailureFixture") != true, "Failed feature rolls back partially installed patches");
             failing.Dispose();
             Voicechat.Reset(); Frame(true); Voicechat.Loading = true;
             Check(!Frame() && !Voicechat.Toggle, "Disposal restores original reset behavior");
             config.Bind("MicTogglePersistence", "Enabled", true).Value = false;
-            feature.Initialize(config, log, true);
+            feature.Initialize(config, log);
             Check(Harmony.GetPatchInfo(method)?.Owners.Contains(Plugin.Id + ".MicTogglePersistence") != true,
                 "Feature switch off installs no patches");
             config.Bind("MicTogglePersistence", "Enabled", true).Value = true;
-            feature.Initialize(config, log, false);
-            Check(Harmony.GetPatchInfo(method)?.Owners.Contains(Plugin.Id + ".MicTogglePersistence") != true,
-                "Master switch off installs no patches");
-            feature.Initialize(config, log, true);
+
+            feature.Initialize(config, log);
             Voicechat.Reset();
             Check(!Frame() && !Voicechat.Toggle, "New session starts closed");
+            Check(feature.IsActive && !feature.RestartRequired, "Settings initially match active feature");
+            feature.Enabled.Value = false;
+            config.Save();
+            Check(feature.IsActive && feature.RestartRequired,
+                "Changing setting keeps running patches active until restart");
+            var saved = new ConfigFile(config.ConfigFilePath, false);
+            Check(!saved.Bind("MicTogglePersistence", "Enabled", true).Value,
+                "Feature checkbox preference persists to disk");
+            feature.Dispose();
+            feature.Initialize(config, log);
+            Check(!feature.IsActive && !feature.RestartRequired,
+                "Next initialization applies disabled preference and clears pending status");
+            feature.Enabled.Value = true;
+            Check(feature.RestartRequired && !feature.IsActive,
+                "Enabling saved preference waits for restart");
+            ModMenuTests.Run(feature, config, log, Check);
+            RestartSettingsTests.Run(feature, config, log, Check);
             Console.WriteLine($"All {checks} checks passed.");
         }
         finally

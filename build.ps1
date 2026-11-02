@@ -20,8 +20,5 @@ if ($Deploy) {
     $pluginDirectory = Join-Path $GamePath 'BepInEx\plugins\CasualtiesTogetherAddons'
     New-Item -ItemType Directory -Path $pluginDirectory -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'CasualtiesTogetherAddons\bin\Release\netstandard2.1\CasualtiesTogetherAddons.dll') -Destination $pluginDirectory -Force
-    # Remove only the retired starter DLL.
-    $oldPlugin = Join-Path $GamePath 'BepInEx\plugins\CasualtiesMicMemory\CasualtiesMicMemory.dll'
-    if (Test-Path -LiteralPath $oldPlugin) { Remove-Item -LiteralPath $oldPlugin }
     Write-Host "Installed CasualtiesTogetherAddons.dll in $pluginDirectory"
 }

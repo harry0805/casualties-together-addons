@@ -7,6 +7,7 @@ namespace CasualtiesTogetherAddons.Features;
 internal sealed class MicTogglePersistenceFeature : FeatureModule
 {
     public override string Id => "MicTogglePersistence";
+    public override string DisplayName => "Persist Toggle to talk";
     protected override string Description =>
         "Remember toggle-to-talk across loading and reconnecting within this game session.";
 

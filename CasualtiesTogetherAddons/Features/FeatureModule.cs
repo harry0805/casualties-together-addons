@@ -11,14 +11,21 @@ internal abstract class FeatureModule : IDisposable
     private Harmony harmony;
     private ManualLogSource logger;
     public abstract string Id { get; }
+    public virtual string DisplayName => Id;
+    public string Summary => Description;
+    public ConfigEntry<bool> Enabled { get; private set; }
+    public bool StartupEnabled { get; private set; }
+    public bool IsActive => harmony != null;
+    public bool RestartRequired => Enabled != null && Enabled.Value != StartupEnabled;
     protected abstract string Description { get; }
 
-    public void Initialize(ConfigFile config, ManualLogSource log, bool masterEnabled)
+    public void Initialize(ConfigFile config, ManualLogSource log)
     {
         logger = log;
-        var enabled = config.Bind(Id, "Enabled", true,
+        Enabled = config.Bind(Id, "Enabled", true,
             Description + " Requires a game restart.");
-        if (!masterEnabled || !enabled.Value)
+        StartupEnabled = Enabled.Value;
+        if (!StartupEnabled)
         {
             log.LogInfo($"[{Id}] Disabled.");
             return;
