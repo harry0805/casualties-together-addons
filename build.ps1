@@ -1,16 +1,23 @@
 param(
     [string]$GamePath = 'C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo',
+    [string]$TogetherDll,
     [switch]$Deploy
 )
 
 $ErrorActionPreference = 'Stop'
 $projectPath = Join-Path $PSScriptRoot 'CasualtiesTogetherAddons\CasualtiesTogetherAddons.csproj'
-$togetherFiles = @(Get-ChildItem -LiteralPath (Join-Path $GamePath 'BepInEx\plugins') -Filter CasualtiesMP.dll -Recurse -File)
-if ($togetherFiles.Count -ne 1) {
-    throw "Expected one installed CasualtiesMP.dll; found $($togetherFiles.Count). Check the multiplayer installation."
+if ($TogetherDll) {
+    if (!(Test-Path -LiteralPath $TogetherDll -PathType Leaf)) { throw 'The specified multiplayer DLL does not exist.' }
+    $TogetherDll = (Resolve-Path -LiteralPath $TogetherDll).Path
+} else {
+    $togetherFiles = @(Get-ChildItem -LiteralPath (Join-Path $GamePath 'BepInEx\plugins') -Filter CasualtiesMP.dll -Recurse -File)
+    if ($togetherFiles.Count -ne 1) {
+        throw "Expected one installed CasualtiesMP.dll; found $($togetherFiles.Count). Specify -TogetherDll with the active DLL from BepInEx's log."
+    }
+    $TogetherDll = $togetherFiles[0].FullName
 }
 
-& dotnet build $projectPath -c Release "-p:GamePath=$GamePath" "-p:TogetherDll=$($togetherFiles[0].FullName)"
+& dotnet build $projectPath -c Release "-p:GamePath=$GamePath" "-p:TogetherDll=$TogetherDll"
 if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
 
 if ($Deploy) {

@@ -11,7 +11,11 @@
     <EmbeddedResource Include="..\CasualtiesTogetherAddons\Assets\VoiceIndicator\*.png" LogicalName="CasualtiesTogetherAddons.Assets.VoiceIndicator.%(Filename)%(Extension)" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     <Compile Include="..\CasualtiesTogetherAddons\Features\*.cs" Link="Features\%(Filename)%(Extension)" />
+    <Compile Include="..\CasualtiesTogetherAddons\Networking\RejoinFlow.cs" Link="Networking\RejoinFlow.cs" />
+    <Compile Include="..\CasualtiesTogetherAddons\Networking\SteamLobbyReader.cs" Link="Networking\SteamLobbyReader.cs" />
     <Compile Include="..\CasualtiesTogetherAddons\UI\FeatureSettingsActions.cs" Link="UI\FeatureSettingsActions.cs" />
+    <Compile Include="..\CasualtiesTogetherAddons\UI\RejoinPopupLayout.cs" Link="UI\RejoinPopupLayout.cs" />
+    <Compile Include="..\CasualtiesTogetherAddons\UI\AddonMenuInput.cs" Link="UI\AddonMenuInput.cs" />
     <Compile Include="..\CasualtiesTogetherAddons\UI\ModMenuSettings.cs" Link="UI\ModMenuSettings.cs" />
     <Reference Include="UnityEngine.IMGUIModule" HintPath="$(ManagedPath)\UnityEngine.IMGUIModule.dll" />
     <Reference Include="UnityEngine.ImageConversionModule" HintPath="$(ManagedPath)\UnityEngine.ImageConversionModule.dll" />

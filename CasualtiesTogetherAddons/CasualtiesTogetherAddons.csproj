@@ -28,6 +28,7 @@
     <Reference Include="Unity.TextMeshPro" HintPath="$(ManagedPath)\Unity.TextMeshPro.dll" Private="false" />
     <Reference Include="Assembly-CSharp" HintPath="$(ManagedPath)\Assembly-CSharp.dll" Private="false" />
     <Reference Include="CasualtiesMP" HintPath="$(TogetherDll)" Private="false" />
+    <Reference Include="LiteNetLib" HintPath="$([System.IO.Path]::GetDirectoryName('$(TogetherDll)'))\LiteNetLib.dll" Private="false" />
   </ItemGroup>
   
   <Target Name="CheckGameReferences" BeforeTargets="ResolveReferences">

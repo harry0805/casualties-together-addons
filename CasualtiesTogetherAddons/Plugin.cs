@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using CasualtiesTogetherAddons.Features;
 using CasualtiesTogetherAddons.UI;
+using CasualtiesTogetherAddons.Networking;
 using CasualtiesTogetherUtils;
 
 namespace CasualtiesTogetherAddons;
@@ -16,6 +17,7 @@ public sealed class Plugin : BaseUnityPlugin
     private MultiplayerSettings settings;
     private ModMenuSettings modMenuSettings;
     private bool initialized;
+    private AddonMenuInput menuInput;
 
     private static bool MultiplayerIsActive()
     {
@@ -36,7 +38,9 @@ public sealed class Plugin : BaseUnityPlugin
             return;
         }
 
-        features = [new MicTogglePersistenceFeature(), new BetterVoiceIndicatorFeature()];
+        try { menuInput = new AddonMenuInput(); }
+        catch (System.Exception error) { Logger.LogError($"Addon menu input could not initialize: {error}"); }
+        features = [new MicTogglePersistenceFeature(), new BetterVoiceIndicatorFeature(), new RejoinFeature(menuInput)];
         foreach (var feature in features)
             feature.Initialize(Config, Logger);
         settings = new MultiplayerSettings(features, Logger);
@@ -49,10 +53,23 @@ public sealed class Plugin : BaseUnityPlugin
 
     private void Update()
     {
-        if (!initialized || MultiplayerIsActive()) return;
+        if (!initialized) return;
+        if (MultiplayerIsActive())
+        {
+            foreach (var feature in features)
+                if (feature is RejoinFeature rejoin) rejoin.Tick();
+            return;
+        }
         Shutdown();
         enabled = false;
         Logger.LogInfo("Casualties Together was deactivated; addon patches and settings have been removed.");
+    }
+
+    private void OnGUI()
+    {
+        if (!initialized) return;
+        foreach (var feature in features)
+            if (feature is RejoinFeature rejoin) rejoin.DrawPopup();
     }
 
     private void Shutdown()
@@ -67,7 +84,12 @@ public sealed class Plugin : BaseUnityPlugin
         {
             modMenuSettings = null;
             settings = null;
-            foreach (var feature in features) feature.Dispose();
+            try { foreach (var feature in features) feature.Dispose(); }
+            finally
+            {
+                menuInput?.Dispose();
+                menuInput = null;
+            }
         }
     }
 

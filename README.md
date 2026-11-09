@@ -4,6 +4,12 @@ A BepInEx 5 companion plugin for independently configurable features on top of C
 
 ## Features
 
+### Rejoin
+
+Adds **Rejoin server** beneath the password row of the multiplayer connection menu while connected as a client in a loaded world. **Install it on the client only; the host needs no addon.** It actually disconnects, returns to the main menu, then makes one normal connection attempt to the same Steam lobby or direct server. Other players see the normal disconnect and reconnect. The mod's normal world loading screen and join synchronization run again. This feature is pinned to Casualties Together 5.3.1 and still needs live multiplayer verification.
+
+Rejoining can repair issues with items and entities that ordinary updates leave behind, but character restoration follows the host's normal reconnect rules. A locked/full lobby or connection failure can leave you disconnected. A separate popup shows progress and Cancel during the attempt, closes on success, and shows a red error with Close on failure. The normal world loading screen remains in control during loading. There is no automatic retry loop. Read the [behavior, risks and multiplayer test checklist](docs/rejoin.md).
+
 ### MicTogglePersistence
 
 Enabled by default. Remembers your toggle-to-talk choice through world loading and reconnecting within the same running game. The patch preserves the toggle around the multiplayer mod's automatic reset; the original voice-chat method still controls recording and transmission.
@@ -64,6 +70,9 @@ Enabled = true
 
 [BetterVoiceIndicator]
 Enabled = true
+
+[Rejoin]
+Enabled = true
 ```
 
 Each feature has its own `Enabled` setting. Set it to `false` to disable that feature. **For manual edits, close the game before editing, then relaunch.**
@@ -83,6 +92,8 @@ Close the game, then build and install:
 ```
 
 The default game folder is `C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo`. Override it with `-GamePath 'D:\path\to\game'`. The script locates the installed `CasualtiesMP.dll` recursively and copies only our new DLL into `BepInEx\plugins\CasualtiesTogetherAddons`.
+
+If multiple multiplayer DLLs are installed, pass `-TogetherDll 'C:\path\to\the\active\CasualtiesMP.dll'` using the assembly location from the BepInEx log. The script refuses to guess which copy is active.
 
 ## Verify in game
 
@@ -143,6 +154,6 @@ Manual activation checks: deactivate multiplayer and restart; confirm no addon s
 
 ## Compatibility and removal
 
-Built against the locally installed multiplayer assembly 5.2.0. The sibling source checkout specifies 5.2.1, so it is used for reference rather than deployment. Multiplayer updates may require changes to the patches. A host's optional identical-plugin-list rule can still reject additional client plugins.
+Built against the locally installed multiplayer assembly 5.3.1.0. Multiplayer updates may require changes to the patches. A host's optional identical-plugin-list rule can still reject additional client plugins.
 
 To uninstall, close the game and remove only `BepInEx\plugins\CasualtiesTogetherAddons`. Settings remain in the config file until you remove it separately.

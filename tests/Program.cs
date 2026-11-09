@@ -100,8 +100,13 @@ internal static class Program
         if (args.Length == 3 && args[0] == "--installed")
         {
             InstalledVoiceIndicatorTests.Run(args[1], args[2]);
+            InstalledRejoinTests.Run(args[1], args[2]);
             return;
         }
+        RejoinFlowTests.Run();
+        SteamLobbyReaderTests.Run();
+        RejoinPopupLayoutTests.Run();
+        AddonMenuInputTests.Run();
         var directory = Path.Combine(Path.GetTempPath(), "CasualtiesTogetherAddons-tests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         var log = new ManualLogSource("FeatureTests");
