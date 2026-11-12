@@ -32,6 +32,48 @@ internal static class InstalledVoiceIndicatorTests
                 c.operand is MethodInfo method && method.Name == "DrawAndSuppress") != 1)
                 throw new Exception("Installed HUD replacement did not insert exactly one drawing call.");
             Console.WriteLine("PASS: Installed multiplayer HUD accepts production voice text replacement");
+
+            var voice = multiplayer.GetType("Together.Voicechat", true);
+            foreach (var name in new[] { "_toggle_to_talk_toggled", "_push_to_talk_pushed", "ENABLE_LOCAL_LOOPBACK" })
+            {
+                var field = AccessTools.DeclaredField(voice, name);
+                if (field == null || !field.IsStatic || field.FieldType != typeof(bool))
+                    throw new Exception("Missing compatible voice field: " + name);
+            }
+            foreach (var name in new[] { "RecordMicUpdate", "VoiceChatIsEnabled" })
+            {
+                var method = AccessTools.DeclaredMethod(voice, name, Type.EmptyTypes);
+                if (method == null || !method.IsStatic || method.ReturnType != typeof(bool))
+                    throw new Exception("Missing compatible voice method: " + name);
+            }
+            var setMode = AccessTools.DeclaredMethod(voice, "SetMicrophoneMode", new[] { typeof(byte) });
+            var audio = AccessTools.DeclaredMethod(voice, "Client_SendMicDataFrame", new[] { typeof(float[]), typeof(bool) });
+            if (setMode == null || !setMode.IsStatic || setMode.ReturnType != typeof(void)
+                || audio == null || !audio.IsStatic || audio.ReturnType != typeof(void)
+                || AccessTools.DeclaredField(voice, "current_microphone_mode")?.FieldType != typeof(byte)
+                || AccessTools.DeclaredField(voice, "my_volume")?.FieldType != typeof(float))
+                throw new Exception("Installed voice mode/audio API changed.");
+            var record = PatchProcessor.GetOriginalInstructions(AccessTools.DeclaredMethod(voice, "RecordMicUpdate"));
+            foreach (var name in new[] { "_toggle_to_talk_toggled", "_push_to_talk_pushed" })
+                if (!record.Any(c => c.opcode == OpCodes.Stsfld && Equals(c.operand, AccessTools.DeclaredField(voice, name))))
+                    throw new Exception("Recording no longer writes expected state: " + name);
+            Console.WriteLine("PASS: Installed voice patch signatures, injected fields, and recording state writes");
+
+            var menu = multiplayer.GetType("Together.UIMainMenu", true);
+            var render = AccessTools.DeclaredMethod(menu, "_GUI_RenderSettingsMenu");
+            var sidebar = addon.GetType("CasualtiesTogetherAddons.UI.ModMenuSettings", true);
+            var sidebarOriginal = PatchProcessor.GetOriginalInstructions(render);
+            var sidebarReplaced = ((IEnumerable<CodeInstruction>)AccessTools.Method(sidebar, "InsertSidebarEntry")
+                .Invoke(null, new object[] { sidebarOriginal.Select(c => new CodeInstruction(c)).ToList() })).ToList();
+            if (sidebarReplaced.Count != sidebarOriginal.Count + 2
+                || sidebarReplaced.Count(c => c.operand is MethodInfo m && m.Name == "DrawSidebarEntry") != 1)
+                throw new Exception("Installed settings sidebar replacement failed.");
+            var native = multiplayer.GetType("Together.SettingsMenu_Start_MultiplayerPatch", true);
+            if (AccessTools.DeclaredMethod(native, "BuildMPSettingsUI", Type.EmptyTypes) == null
+                || AccessTools.DeclaredField(native, "DeactivateButton") == null
+                || AccessTools.DeclaredField(menu.GetNestedType("SettingsTab"), "tabs") == null)
+                throw new Exception("Installed native settings hooks changed.");
+            Console.WriteLine("PASS: Installed settings sidebar accepts production transpiler and native settings hooks resolve");
         }
         finally
         {

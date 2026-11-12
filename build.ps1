@@ -1,5 +1,5 @@
 param(
-    [string]$GamePath = 'C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo',
+    [string]$GamePath = 'C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown',
     [string]$TogetherDll,
     [switch]$Deploy
 )

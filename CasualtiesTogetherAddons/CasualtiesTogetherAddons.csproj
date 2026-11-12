@@ -10,9 +10,9 @@
     <LangVersion>latest</LangVersion>
     <RootNamespace>CasualtiesTogetherAddons</RootNamespace>
     <GamePath Condition="'$(GamePath)' == ''">$(CASUALTIESTOGETHER_GAME_PATH)</GamePath>
-    <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo</GamePath>
+    <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown</GamePath>
     <ManagedPath>$(GamePath)\CasualtiesUnknown_Data\Managed</ManagedPath>
-    <TogetherDll Condition="'$(TogetherDll)' == ''">$(GamePath)\BepInEx\plugins\mod\BepInEx\plugins\Together\CasualtiesMP.dll</TogetherDll>
+    <TogetherDll Condition="'$(TogetherDll)' == ''">$(GamePath)\BepInEx\plugins\Together\CasualtiesMP.dll</TogetherDll>
   </PropertyGroup>
 
   <ItemGroup>

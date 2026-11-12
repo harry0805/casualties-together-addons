@@ -38,18 +38,27 @@ internal sealed class RejoinFeature : FeatureModule
 
     protected override void ApplyPatches(Harmony patches)
     {
-        if (typeof(Multiplayer).Assembly.GetName().Version != new Version(5, 3, 1, 0))
-            throw new NotSupportedException("Rejoin currently supports Casualties Together 5.3.1 only.");
-        var draw = AccessTools.DeclaredMethod(typeof(UIMainMenu), "_GUI___DirectConnect_DoPasswordField");
-        if (draw == null) throw new NotSupportedException("Missing 5.3.1 multiplayer menu hook.");
+        ValidateApi();
+        var draw = RejoinCompatibility.RequireStaticMethod(typeof(UIMainMenu), "_GUI___DirectConnect_DoPasswordField",
+            typeof(void), typeof(Rect), typeof(float), typeof(float), typeof(float));
         steamLobby = new SteamLobbyReader(typeof(KSteam));
-        var skin = AccessTools.DeclaredMethod(typeof(UIBullshit), "_GUI_DoTexturesForMPUserInterface", Type.EmptyTypes);
-        if (skin == null) throw new NotSupportedException("Missing multiplayer menu skin helper.");
+        var skin = RejoinCompatibility.RequireStaticMethod(typeof(UIBullshit), "_GUI_DoTexturesForMPUserInterface", typeof(void));
         if (menuInput == null) throw new NotSupportedException("Addon menu input is unavailable.");
         popup = new RejoinPopup((Action)skin.CreateDelegate(typeof(Action)));
         instance = this;
         patches.Patch(draw, postfix: new HarmonyMethod(typeof(RejoinFeature), nameof(DrawButton)));
         menuRegistration = menuInput.Register(() => PopupVisible);
+    }
+
+    private static void ValidateApi()
+    {
+        RejoinCompatibility.RequireStaticMethod(typeof(Multiplayer), "ShutdownNetwork", typeof(void));
+        RejoinCompatibility.RequireStaticMethod(typeof(TransportSteamworks), "OnWantToJoinLobby", typeof(bool), typeof(ulong));
+        RejoinCompatibility.RequireStaticMethod(typeof(TransportLiteNetLib), "OnWantToConnect", typeof(bool), typeof(string), typeof(Net.NetType));
+        RejoinCompatibility.RequireStaticField(typeof(Multiplayer), "INPUT_PASSWORD", typeof(string));
+        RejoinCompatibility.RequireStaticField(typeof(Multiplayer), "CLIENT_JOIN_SECRET", typeof(string));
+        RejoinCompatibility.RequireStaticField(typeof(UIMainMenu), "USERINPUT_NAME", typeof(string));
+        RejoinCompatibility.RequireStaticField(typeof(UIMainMenu), "LAST_VALID_INPUT_COLOR", typeof(Color24));
     }
 
     private static bool Ready() => ConnectedToServer() && Util.IsWorldGenerated() && !ClientMain.ServerIsGeneratingWorld;

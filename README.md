@@ -6,7 +6,7 @@ A BepInEx 5 companion plugin for independently configurable features on top of C
 
 ### Rejoin
 
-Adds **Rejoin server** beneath the password row of the multiplayer connection menu while connected as a client in a loaded world. **Install it on the client only; the host needs no addon.** It actually disconnects, returns to the main menu, then makes one normal connection attempt to the same Steam lobby or direct server. Other players see the normal disconnect and reconnect. The mod's normal world loading screen and join synchronization run again. This feature is pinned to Casualties Together 5.3.1 and still needs live multiplayer verification.
+Adds **Rejoin server** beneath the password row of the multiplayer connection menu while connected as a client in a loaded world. **Install it on the client only; the host needs no addon.** It actually disconnects, returns to the main menu, then makes one normal connection attempt to the same Steam lobby or direct server. Other players see the normal disconnect and reconnect. The mod's normal world loading screen and join synchronization run again. Compatibility is checked by required API signatures and patch locations rather than an MP version allowlist.
 
 Rejoining can repair issues with items and entities that ordinary updates leave behind, but character restoration follows the host's normal reconnect rules. A locked/full lobby or connection failure can leave you disconnected. A separate popup shows progress and Cancel during the attempt, closes on success, and shows a red error with Close on failure. The normal world loading screen remains in control during loading. There is no automatic retry loop. Read the [behavior, risks and multiplayer test checklist](docs/rejoin.md).
 
@@ -91,7 +91,7 @@ Close the game, then build and install:
 .\build.ps1 -Deploy
 ```
 
-The default game folder is `C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo`. Override it with `-GamePath 'D:\path\to\game'`. The script locates the installed `CasualtiesMP.dll` recursively and copies only our new DLL into `BepInEx\plugins\CasualtiesTogetherAddons`.
+The default game folder is `C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown`. Override it with `-GamePath 'D:\path\to\game'`. The script locates the installed `CasualtiesMP.dll` recursively and copies only our new DLL into `BepInEx\plugins\CasualtiesTogetherAddons`.
 
 If multiple multiplayer DLLs are installed, pass `-TogetherDll 'C:\path\to\the\active\CasualtiesMP.dll'` using the assembly location from the BepInEx log. The script refuses to guess which copy is active.
 
@@ -133,7 +133,7 @@ The Windows .NET Framework 4.8 harness links the production feature and mod-menu
 The indicator tests cover state visibility, live level decay, bottom-left positioning, safe rejection of incompatible HUD layouts, independent settings, and Harmony patch installation/removal against fixtures. To also validate the replacement against the installed multiplayer HUD's actual IL (without executing the game), build the plugin and tests, then run:
 
 ```powershell
-.\tests\bin\Release\net48\FeatureTests.exe --installed 'C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo' "$PWD\CasualtiesTogetherAddons\bin\Release\netstandard2.1\CasualtiesTogetherAddons.dll"
+.\tests\bin\Release\net48\FeatureTests.exe --installed 'C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown' "$PWD\CasualtiesTogetherAddons\bin\Release\netstandard2.1\CasualtiesTogetherAddons.dll"
 ```
 
 This optional check reads the installed HUD and runs the production transpiler. It does not verify rendering or execute real recording methods, which need the game's Unity/Mono runtime.
@@ -154,6 +154,6 @@ Manual activation checks: deactivate multiplayer and restart; confirm no addon s
 
 ## Compatibility and removal
 
-Built against the locally installed multiplayer assembly 5.3.1.0. Multiplayer updates may require changes to the patches. A host's optional identical-plugin-list rule can still reject additional client plugins.
+Built against the full-game installation and locally installed multiplayer assembly 5.5.0.0. Automated fixtures and installed-assembly IL/API checks pass. MP version changes alone do not disable the addon. Features validate the methods, fields, or IL anchors they use and skip themselves if incompatible; unrelated updates need no addon rebuild. Behavior changes that preserve these structures are not detected.
 
 To uninstall, close the game and remove only `BepInEx\plugins\CasualtiesTogetherAddons`. Settings remain in the config file until you remove it separately.

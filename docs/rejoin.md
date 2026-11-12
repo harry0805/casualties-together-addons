@@ -1,8 +1,8 @@
-﻿# Rejoin server
+# Rejoin server
 
 ## Use
 
-Install the addon on the client; the host needs no addon. Supported multiplayer assembly: Casualties Together 5.3.1.0.
+Install the addon on the client; the host needs no addon. Rejoin checks required connection method signatures, writable credential fields, menu hooks, and Steam lobby fields instead of requiring a particular MP version. Last inspected multiplayer assembly: 5.5.0.0.
 
 Open Multiplayer Mod Menu > Multiplayer. **Rejoin server** and its warning appear below the password row while connected as a client. It is enabled in a loaded world, including for dead/spectating clients. The button is disabled during an attempt, while a dialog is open, and during its ten-second cooldown. Hosts cannot use it.
 
@@ -35,22 +35,14 @@ Main-menu readiness is limited to 20 seconds, connection setup to 60 seconds, an
 - A full/locked lobby, late-join restrictions, changed credentials, bans, plugin-list enforcement, host shutdown or Steam errors can reject the attempt. No slot is reserved and no host rules are bypassed.
 - The two-second gap is not a remote acknowledgement. Host cleanup, old callbacks and layer transitions can still expose stock reconnect races under latency/load.
 - Steam reuses the lobby ID, whose owner can change. Direct connect reuses the resolved peer endpoint rather than resolving the original hostname again.
-- Cancel after disconnection may leave you at the main menu. The feature is pinned to the inspected 5.3.1 build; other patches can change native behavior.
+- Cancel after disconnection may leave you at the main menu. MP version changes alone do not disable this feature. Missing or incompatible required APIs skip the feature and leave the original multiplayer behavior in place. Upstream behavior changes that preserve API shapes are not detected.
 
 ## Verification
 
 Build with `build.ps1`; install with `build.ps1 -Deploy` while the game is closed. If multiple multiplayer DLLs are installed, specify the active one with `-TogetherDll`, using its location from the BepInEx log.
 
-The fixture suite passes 128 checks: 18 rejoin flow, 5 Steam lobby compatibility, 16 popup layout, 11 shared modal input, and 78 existing feature checks. Shared input tests execute the production Harmony patches against fixtures, covering multiple dialogs, both pointer query paths, native overlays, outgoing input, and registration/plugin cleanup. The optional --installed mode checks the real native input hook locations and that the feature does not call the multiplayer menu's open-state setter/query. Loading the addon for this optional mode has been blocked by Windows Application Control; it is not a live gameplay test.
+The fixture suite passes 137 checks: 9 rejoin API compatibility, 18 rejoin flow, 5 Steam lobby compatibility, 16 popup layout, 11 shared modal input, and 78 existing feature checks. Shared input tests execute the production Harmony patches against fixtures, covering multiple dialogs, both pointer query paths, native overlays, outgoing input, and registration/plugin cleanup. The optional --installed mode passes against the full game and multiplayer 5.5.0.0: it checks production HUD/sidebar transpilers, voice signatures and fields, the real Steam lobby field chain, connection-menu anchor, native input hooks, and normal connection API references. Rejoin IL is read with Mono.Cecil because the .NET Framework harness cannot resolve the updated mod's default interface methods. These checks do not execute real gameplay, microphone capture, or a live rejoin.
 
 ## Reusing modal input in another addon feature
 
 The plugin owns one AddonMenuInput service for its lifetime. A modal feature receives that service and keeps the IDisposable returned by `menuInput.Register(() => dialogIsActuallyVisible)`. The visibility predicate should be a side-effect-free check and return false when its UI is hidden, including during loading if appropriate. Closing a dialog changes its visibility; feature disposal must dispose the registration. The service releases input only after all registered dialogs are hidden or removed. Rendering and network operations remain the feature's responsibility. No additional input patches are needed for another modal using the same interaction paths.
-
-In-game checks still required:
-
-1. Rejoin an unmodified host using direct connect and Steam. Compare items, equipment, nested bags, other players/entities and character progress before/after.
-2. Confirm successful rejoining returns to the game's normal menu state, without reopening the multiplayer menu. Check native popup styling and Cancel/Close visibility at normal/high UI scales and in smaller windows.
-3. Test cancellation before disconnect, during the menu gap and while connecting; test failure dismissal and starting a replacement connection. The addon must not disconnect a replacement session.
-4. Test password/invite-secret sessions, IPv4/IPv6, latency, slow loading, full/locked lobbies, host shutdown and a host changing layers during the gap. Verify one attempt and useful native rejection details.
-5. Disable Rejoin and restart: its button and input hook should disappear while the voice features remain usable.

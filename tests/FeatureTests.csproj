@@ -3,7 +3,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net48</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo</GamePath>
+    <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown</GamePath>
     <CorePath>$(GamePath)\BepInEx\core</CorePath>
     <ManagedPath>$(GamePath)\CasualtiesUnknown_Data\Managed</ManagedPath>
   </PropertyGroup>
@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     <Compile Include="..\CasualtiesTogetherAddons\Features\*.cs" Link="Features\%(Filename)%(Extension)" />
     <Compile Include="..\CasualtiesTogetherAddons\Networking\RejoinFlow.cs" Link="Networking\RejoinFlow.cs" />
+    <Compile Include="..\CasualtiesTogetherAddons\Networking\RejoinCompatibility.cs" Link="Networking\RejoinCompatibility.cs" />
     <Compile Include="..\CasualtiesTogetherAddons\Networking\SteamLobbyReader.cs" Link="Networking\SteamLobbyReader.cs" />
     <Compile Include="..\CasualtiesTogetherAddons\UI\FeatureSettingsActions.cs" Link="UI\FeatureSettingsActions.cs" />
     <Compile Include="..\CasualtiesTogetherAddons\UI\RejoinPopupLayout.cs" Link="UI\RejoinPopupLayout.cs" />

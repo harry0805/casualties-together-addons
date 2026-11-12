@@ -104,6 +104,7 @@ internal static class Program
             return;
         }
         RejoinFlowTests.Run();
+        RejoinCompatibilityTests.Run();
         SteamLobbyReaderTests.Run();
         RejoinPopupLayoutTests.Run();
         AddonMenuInputTests.Run();
